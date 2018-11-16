@@ -1,7 +1,7 @@
 import socket
 from client_handler import Client_Handler
 import threading
-from logger import Logger
+import logger
 
 
 class Listener():
@@ -10,7 +10,7 @@ class Listener():
 		self.port = 9999
 		self.max_players = 20
 		self.players = []
-		self.logger = Logger("Listener")
+		self.logger = logger.Logger("Listener")
 
 	def listen(self):
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
