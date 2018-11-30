@@ -31,6 +31,7 @@ def loop():
             print "waiting for a free game room"
             g = Game.Game(api)
             g.start_game()
+            g.game()
             continue
 
         elif choice == 4:

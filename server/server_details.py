@@ -6,5 +6,5 @@ class Server_Details:
     def find_player_in_games(self, username):
         for g in self.games:
             if username == g.player_one or username == g.player_two:
-                return g.game_id
+                return g
         return False

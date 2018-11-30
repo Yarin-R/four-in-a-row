@@ -48,7 +48,12 @@ class API:
 
     def start_game(self):
         data = self.request("STARTGAME", "")
-        resp_array = data.split("|")
+        if "|" in data:
+            resp_array = data.split("|")
+        else:
+            resp_array = []
+            resp_array.append(data)
+
         if resp_array[0] == "JOINED_GAME":
             return True, resp_array[1]
         elif resp_array[0] == "JOINED_LIST":
@@ -56,8 +61,42 @@ class API:
 
     def join_game(self):
         data = self.request("JOINGAME", "")
-        resp_array = data.split("|")
+        if "|" in data:
+            resp_array = data.split("|")
+        else:
+            resp_array = []
+            resp_array.append(data)
+
         if resp_array[0] == "JOINED_GAME":
             return True, resp_array[1]
-        elif resp_array[0] == "JOINED_LIST":
+        elif resp_array[0] == "WAITING_GAME":
             return False, False
+
+    def game_get_board(self):
+        # Getting the board or the if you are the winner or not
+        data = self.request("GAME_BOARD", "")
+        resp_array = data.split("|")
+        if resp_array[1].startswith("WINNER"):
+            # do something about winner
+            username_winner = resp_array[1].split(",")[1]
+            return True, username_winner
+        else:
+            return False, resp_array[1]
+
+    def game_get_turn(self):
+        data = self.request("GAME_IF_TURN", "")
+        resp_array = data.split("|")
+        if resp_array[1] == "True":
+            return True
+        else:
+            return False
+
+    def game_do_turn(self, col):
+        data = self.request("GAME_DO_TURN", str(col))
+        resp_array = data.split("|")
+        return resp_array[1]
+
+    def game_get_competitor(self):
+        data = self.request("GAME_GET_COMPETITOR", "")
+        resp_array = data.split("|")
+        return resp_array[1]

@@ -78,9 +78,11 @@ class Client_Handler():
             # Now just the important features
             if cmd == "STARTGAME":
                 if self.player.username not in self.server_details.waiting_for_game_players:
-                    game_id = self.server_details.find_player_in_games(self.player.username)
-                    if game_id:
-                        self.c_socket.send("JOINED_GAME|" + game_id)
+                    player_game = self.server_details.find_player_in_games(self.player.username)
+                    if player_game:
+                        self.player.game = player_game
+                        game_id = player_game.game_id
+                        self.c_socket.send("JOINED_GAME|" + str(game_id))
                         self.logger.info("Client " + str(self.c_addr) + " joined game " + game_id)
                         continue
                     else:
@@ -91,10 +93,12 @@ class Client_Handler():
 
             if cmd == "JOINGAME":
                 # Check if already in a game!
-                game_id = self.server_details.find_player_in_games(self.player.username)
-                if game_id:
-                    self.c_socket.send("JOINED_GAME|" + game_id)
-                    self.logger.info("Client " + str(self.c_addr) + " joined game " + game_id)
+                player_game = self.server_details.find_player_in_games(self.player.username)
+                if player_game:
+                    game_id = player_game.game_id
+                    self.player.game = player_game
+                    self.c_socket.send("JOINED_GAME|" + str(game_id))
+                    self.logger.info("Client " + str(self.c_addr) + " joined game " + str(game_id))
                     continue
                 else:
                     found_game = False
@@ -104,17 +108,63 @@ class Client_Handler():
                             # Creating a game!
                             new_game = game.Game(self.player.username, player)
                             found_game = True
+                            self.player.game = new_game
+                            self.server_details.games.append(new_game)
                             self.server_details.waiting_for_game_players.remove(player)
                             self.server_details.waiting_for_game_players.remove(self.player.username)
-                            self.c_socket.send("JOINED_GAME|" + new_game.game_id)
-                            self.logger.info("Client " + str(self.c_addr) + " joined game " + game_id)
+                            self.c_socket.send("JOINED_GAME|" + str(new_game.game_id))
+                            self.logger.info("Client " + str(self.c_addr) + " joined game " + str(new_game.game_id))
                             break
                     if not found_game:
                         self.c_socket.send("WAITING_GAME")
                         self.logger.info("Client " + str(self.c_addr) + " asked for players")
                     continue
 
+            if cmd == "GAME_BOARD":
+                if self.player.game:
+                    winner = self.player.game.get_winner()
+                    if winner:
+                        self.c_socket.send("GET_BOARD|WINNER,{0}".format(winner))
+                    else:
+                        self.c_socket.send("GET_BOARD|" + self.player.game.get_board())
+                else:
+                    self.c_socket.send("INVALID_GAME_REQUEST")
+                    self.logger.info("Client " + str(self.c_addr) + "invalid game request")
+                continue
 
+            if cmd == "GAME_GET_COMPETITOR":
+                if self.player.game:
+                    if self.player.game.player_one == self.player.username:
+                        competitor = self.player.game.player_two
+                    else:
+                        competitor = self.player.game.player_one
+                    self.c_socket.send("GET_COMPETITOR|" + competitor)
+                else:
+                    self.c_socket.send("INVALID_GAME_REQUEST")
+                    self.logger.info("Client " + str(self.c_addr) + "invalid game request")
+                continue
+
+            if cmd == "GAME_IF_TURN":
+                if self.player.game:
+                    if self.player.game.turn == self.player.username:
+                        my_turn = "True"
+                    else:
+                        my_turn = "False"
+                    self.c_socket.send("IF_TURN|" + my_turn)
+                else:
+                    self.c_socket.send("INVALID_GAME_REQUEST")
+                    self.logger.info("Client " + str(self.c_addr) + "invalid game request")
+                continue
+
+            if cmd == "GAME_DO_TURN":
+                if self.player.game:
+
+                    result_string = self.player.game.do_turn(self.player.username, int(params))
+                    self.c_socket.send("DO_TURN|" + result_string)
+                else:
+                    self.c_socket.send("INVALID_GAME_REQUEST")
+                    self.logger.info("Client " + str(self.c_addr) + "invalid game request")
+                continue
 
             # Else
             else:
