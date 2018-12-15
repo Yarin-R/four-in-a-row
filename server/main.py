@@ -1,6 +1,7 @@
 from listener import Listener
 import sys
 
+
 def main():
 	l = Listener()
 	try:
@@ -8,6 +9,7 @@ def main():
 	except Exception as e:
 		print e
 		sys.exit()
+
 
 if __name__ == "__main__":
 	main()

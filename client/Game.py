@@ -47,7 +47,13 @@ class Game:
 
                 print "It's your turn, go ahead:"
                 self.display_board()
-                col = int(raw_input("Enter Column: "))
+                try:
+                    col = int(raw_input("Enter Column: "))
+
+                except Exception:
+                    print "Invalid choice, try again..."
+                    continue
+
                 if self.api.game_do_turn(int(col)) == "OK":
                     print "Okay"
                 else:
