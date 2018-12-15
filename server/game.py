@@ -16,22 +16,22 @@ class Game:
         for i in range(0, 7):
             for j in range(0, 7):
                 if self.check_winner(i, j):
-                    return self.board[j][i]
+                    return self.game_board[j][i]
 
         return False
 
     def check_winner(self, x, line):
         try:
-            if self.board[line][x] is "R" or self.board[line][x] is "B":
-                kind = self.board[line][x]
-                if kind is self.board[line][x + 1] and kind is self.board[line][x + 2] and kind is self.board[line][x + 3]:
+            if self.game_board[line][x] is "R" or self.game_board[line][x] is "B":
+                kind = self.game_board[line][x]
+                if kind is self.game_board[line][x + 1] and kind is self.game_board[line][x + 2] and kind is self.game_board[line][x + 3]:
                     return True
-                if kind is self.board[line + 1][x + 1] and kind is self.board[line + 2][x + 2] and kind is self.board[line + 3][
+                if kind is self.game_board[line + 1][x + 1] and kind is self.game_board[line + 2][x + 2] and kind is self.game_board[line + 3][
                     x + 3]:
                     return True
-                if kind is self.board[line + 1][x] and kind is self.board[line + 2][x] and kind is self.board[line + 3][x]:
+                if kind is self.game_board[line + 1][x] and kind is self.game_board[line + 2][x] and kind is self.game_board[line + 3][x]:
                     return True
-                if kind is self.board[line + 1][x - 1] and kind is self.board[line + 2][x - 2] and kind is self.board[line + 3][
+                if kind is self.game_board[line + 1][x - 1] and kind is self.game_board[line + 2][x - 2] and kind is self.game_board[line + 3][
                     x - 3]:
                     return True
         except Exception as e:
