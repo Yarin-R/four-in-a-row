@@ -1,5 +1,6 @@
 import uuid
-
+import sqlite3
+import hashlib
 
 class Auth_Handler:
 	def __init__(self):
@@ -31,13 +32,49 @@ class Auth_Handler:
 			return False
 
 	def log_in(self, username, password):
+		salt = "uo8na2uno8dujioaj8sdoj$$81s9"
 		# Will check against file of registered users
 		# returns True/False and a cookie!
 
-		# TODO check if user is registered
+		conn = sqlite3.connect('users.db')
+		c = conn.cursor()
+		c.execute("SELECT * FROM USERS where username=?", (username,))
+		line = c.fetchone()
+		conn.commit()
+		conn.close()
 
-		return True, self.create_cookie(username)
+		if line:
+			# got the user
+			if line[1] == hashlib.sha256(salt + password).hexdigest():
+				return True, self.create_cookie(username)
+
+		return False, None
 
 	def register(self, username, password):
-		pass
+		salt = "uo8na2uno8dujioaj8sdoj$$81s9"
+
+		if username == '' or password == '':
+			return False
+
+		conn = sqlite3.connect('users.db')
+		c = conn.cursor()
+		c.execute("SELECT * FROM USERS where username=?", (username,))
+		line = c.fetchone()
+		conn.commit()
+		conn.close()
+
+		if line:
+			return False
+
+		# Users does not exist
+		password_hash = hashlib.sha256(salt + password).hexdigest()
+		conn = sqlite3.connect('users.db')
+		c = conn.cursor()
+		c.execute("INSERT INTO USERS VALUES (?, ?)", (username, password_hash,))
+		conn.commit()
+		conn.close()
+
+		return True
+
+
 

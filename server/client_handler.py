@@ -60,6 +60,25 @@ class Client_Handler():
                     # TODO Check how many times of failure
                     # TODO block login if brute force in place
 
+            if cmd == "REGISTERAUTH":
+                auth_details = params.split(":")
+                if len(auth_details) != 2:
+                    self.logger.warning("Invalid auth_details")
+                    continue
+                username = auth_details[0]
+                password = auth_details[1]
+                result = self.auth_handler.register(username, password)
+                if result:
+                    self.c_socket.send("REGISTER_SUCCESS")
+                    self.logger.info("Client " + username + " successfully registered!")
+                    continue
+                else:
+                    self.c_socket.send("REGISTER_FAILURE")
+                    self.logger.info("Client " + username + " failed registration, try another username")
+                    continue
+                    # TODO Check how many times of failure
+                    # TODO block login if brute force in place
+
             if self.auth_handler.check_cookie(cookie):
                 self.player.logged_in = True
             else:

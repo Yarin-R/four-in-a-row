@@ -46,6 +46,15 @@ class API:
         else:
             return False
 
+    def register(self, username, password):
+        response = self.request("REGISTERAUTH", username + ":" + password)
+        resp_array = response.split("|")
+
+        if resp_array[0] == "REGISTER_SUCCESS":
+            return True
+        else:
+            return False
+
     def start_game(self):
         data = self.request("STARTGAME", "")
         if "|" in data:

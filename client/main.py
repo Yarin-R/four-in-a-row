@@ -15,6 +15,7 @@ def loop():
 
         try:
             choice = int(raw_input("Enter your choice: "))
+
         except ValueError:
             print "Not a valid choice, try again"
             continue
@@ -38,13 +39,29 @@ def loop():
             print "Thanks"
             return
 
-        else:
+        elif not(choice <= 4 and choice >= 1):
             print "Not a valid choice, try again"
 
 
 
 def main():
     global api
+    result = raw_input('Do you want to register? (enter y or n)')
+    if result == 'y':
+        username = raw_input("Enter username:")
+        password = raw_input("Enter password:")
+        password2 = raw_input("Enter password again:")
+        if password != password2:
+            print 'Wrong passwords...'
+            return
+        else:
+            result = api.register(username, password)
+            if result:
+                print 'Good, please log in'
+            else:
+                print 'Bad registration'
+
+
     # Log in
     username = raw_input("Enter username:")
     password = raw_input("Enter password:")
