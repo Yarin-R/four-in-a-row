@@ -15,6 +15,7 @@ def loop():
 
         try:
             choice = int(raw_input("Enter your choice: "))
+
         except ValueError:
             print "Not a valid choice, try again"
             continue
@@ -38,7 +39,7 @@ def loop():
             print "Thanks"
             return
 
-        else:
+        elif not(choice <= 4 and choice >= 1):
             print "Not a valid choice, try again"
 
 
