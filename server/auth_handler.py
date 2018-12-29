@@ -2,6 +2,7 @@ import uuid
 import sqlite3
 import hashlib
 
+
 class Auth_Handler:
 	def __init__(self):
 		pass

@@ -9,6 +9,7 @@ class Game:
         self.game_board = []
         self.turn = self.player_one  # starting from player one
         self.game_id = random.randint(0, 10000)
+        self.game_close_reason = None
 
         self.create_board()
 
@@ -16,7 +17,10 @@ class Game:
         for i in range(0, 7):
             for j in range(0, 7):
                 if self.check_winner(i, j):
-                    return self.game_board[j][i]
+                    if self.game_board[j][i] == 'B':
+                        return self.player_one
+                    else:
+                        return self.player_two
 
         return False
 

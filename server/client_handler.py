@@ -22,7 +22,20 @@ class Client_Handler():
             data = self.c_socket.recv(1024)
 
             if not data:
-                self.logger.info("Client " + str(self.c_addr) + "blank data, disconnecting...")
+                self.logger.info("Client " + str(self.c_addr) + " blank data, disconnecting...")
+
+                # If in game, remove
+                g = self.server_details.find_player_in_games(self.player.username)
+                if g:
+                    g.game_close_reason = "PLAYER_DISCONNECTED"
+
+                # If in waiting list, remove
+                if self.player.username in self.server_details.waiting_for_game_players:
+                    self.server_details.waiting_for_game_players.remove(self.player.username)
+                    print repr(self.server_details.games)
+                    print repr(self.server_details.waiting_for_game_players)
+                    self.logger.info("Client " + str(self.c_addr) + " removed from waiting list")
+
                 return
 
             # COOKIE|CMD|PARAMS
@@ -96,6 +109,8 @@ class Client_Handler():
             # Logged in!
             # Now just the important features
             if cmd == "STARTGAME":
+                print repr(self.server_details.games)
+                print repr(self.server_details.waiting_for_game_players)
                 if self.player.username not in self.server_details.waiting_for_game_players:
                     player_game = self.server_details.find_player_in_games(self.player.username)
                     if player_game:
@@ -112,6 +127,8 @@ class Client_Handler():
 
             if cmd == "JOINGAME":
                 # Check if already in a game!
+                print repr(self.server_details.games)
+                print repr(self.server_details.waiting_for_game_players)
                 player_game = self.server_details.find_player_in_games(self.player.username)
                 if player_game:
                     game_id = player_game.game_id
@@ -141,9 +158,21 @@ class Client_Handler():
 
             if cmd == "GAME_BOARD":
                 if self.player.game:
+                    if self.player.game.game_close_reason is not None:
+                        self.c_socket.send('GAME_CLOSED|{0}'.format(self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
+                                                                               self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
+                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_two))
+                        self.server_details.games.remove(self.player.game)
+                        self.player.game = None
+                        continue
+
                     winner = self.player.game.get_winner()
                     if winner:
                         self.c_socket.send("GET_BOARD|WINNER,{0}".format(winner))
+                        self.player.game.game_close_reason = "WINNING|{0}".format(winner)
                     else:
                         self.c_socket.send("GET_BOARD|" + self.player.game.get_board())
                 else:
@@ -153,6 +182,17 @@ class Client_Handler():
 
             if cmd == "GAME_GET_COMPETITOR":
                 if self.player.game:
+                    if self.player.game.game_close_reason is not None:
+                        self.c_socket.send('GAME_CLOSED|{0}'.format(self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
+                                                                               self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
+                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_two))
+                        self.server_details.games.remove(self.player.game)
+                        self.player.game = None
+                        continue
+
                     if self.player.game.player_one == self.player.username:
                         competitor = self.player.game.player_two
                     else:
@@ -165,6 +205,17 @@ class Client_Handler():
 
             if cmd == "GAME_IF_TURN":
                 if self.player.game:
+                    if self.player.game.game_close_reason is not None:
+                        self.c_socket.send('GAME_CLOSED|{0}'.format(self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
+                                                                               self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
+                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_two))
+                        self.server_details.games.remove(self.player.game)
+                        self.player.game = None
+                        continue
+
                     if self.player.game.turn == self.player.username:
                         my_turn = "True"
                     else:
@@ -177,6 +228,16 @@ class Client_Handler():
 
             if cmd == "GAME_DO_TURN":
                 if self.player.game:
+                    if self.player.game.game_close_reason is not None:
+                        self.c_socket.send('GAME_CLOSED|{0}'.format(self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
+                                                                               self.player.game.game_close_reason))
+                        self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
+                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_two))
+                        self.server_details.games.remove(self.player.game)
+                        self.player.game = None
+                        continue
 
                     result_string = self.player.game.do_turn(self.player.username, int(params))
                     self.c_socket.send("DO_TURN|" + result_string)

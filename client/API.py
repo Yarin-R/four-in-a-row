@@ -1,6 +1,12 @@
 # API
 import socket
 
+
+# Creating an exception for game closing situation
+class GameClosedException(Exception):
+    pass
+
+
 class API:
     def __init__(self):
         self.cookie = ""
@@ -85,6 +91,8 @@ class API:
         # Getting the board or the if you are the winner or not
         data = self.request("GAME_BOARD", "")
         resp_array = data.split("|")
+        if resp_array[0] == "GAME_CLOSED":
+            raise GameClosedException(resp_array[1])
         if resp_array[1].startswith("WINNER"):
             # do something about winner
             username_winner = resp_array[1].split(",")[1]
@@ -95,6 +103,8 @@ class API:
     def game_get_turn(self):
         data = self.request("GAME_IF_TURN", "")
         resp_array = data.split("|")
+        if resp_array[0] == "GAME_CLOSED":
+            raise GameClosedException(resp_array[1])
         if resp_array[1] == "True":
             return True
         else:
@@ -103,9 +113,14 @@ class API:
     def game_do_turn(self, col):
         data = self.request("GAME_DO_TURN", str(col))
         resp_array = data.split("|")
+        if resp_array[0] == "GAME_CLOSED":
+            raise GameClosedException(resp_array[1])
+
         return resp_array[1]
 
     def game_get_competitor(self):
         data = self.request("GAME_GET_COMPETITOR", "")
         resp_array = data.split("|")
+        if resp_array[0] == "GAME_CLOSED":
+            raise GameClosedException(resp_array[1])
         return resp_array[1]

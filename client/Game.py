@@ -1,5 +1,6 @@
 import time
 import pprint
+import API
 
 
 class Game:
@@ -36,33 +37,37 @@ class Game:
 
     def game(self):
         print "Starting game against " + self.api.game_get_competitor()
-        while True:
-            if self.api.game_get_turn():
-                is_winner, data = self.api.game_get_board()
-                if is_winner:
-                    print "Winner is " + data
-                    return
+        try:
+            while True:
+                if self.api.game_get_turn():
+                    is_winner, data = self.api.game_get_board()
+                    if is_winner:
+                        print "Winner is " + data
+                        return
+                    else:
+                        self.set_board(data)
+
+                    print "It's your turn, go ahead:"
+                    self.display_board()
+                    try:
+                        col = int(raw_input("Enter Column: "))
+
+                    except Exception:
+                        print "Invalid choice, try again..."
+                        continue
+
+                    if self.api.game_do_turn(int(col)) == "OK":
+                        print "Okay"
+                    else:
+                        print "No space left, try another column..."
                 else:
-                    self.set_board(data)
-
-                print "It's your turn, go ahead:"
-                self.display_board()
-                try:
-                    col = int(raw_input("Enter Column: "))
-
-                except Exception:
-                    print "Invalid choice, try again..."
-                    continue
-
-                if self.api.game_do_turn(int(col)) == "OK":
-                    print "Okay"
-                else:
-                    print "No space left, try another column..."
-            else:
-                # not my turn
-                time.sleep(0.5)
-                print "Waiting for your competitor..."
-                # trying again...
+                    # not my turn
+                    time.sleep(0.5)
+                    print "Waiting for your competitor..."
+                    # trying again...
+        except API.GameClosedException as e:
+            print 'Game closed because {0}'.format(e.message)
+            # TODO another message if winning, etc...
     
     def display_board(self):
         # todo Reverse!
