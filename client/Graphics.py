@@ -1,96 +1,198 @@
 from Tkinter import *
 from PIL import Image, ImageTk
 import os
+import sys
+import API
+import Game
+import tkMessageBox
 
-WINDOW_WIDTH = 600
-WINDOW_HEIGHT = 600
+api = API.API()
 
 
 class Window(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
-        self.init_window()
         self.image_refs = []
+        self.login_gui_elements = []
+        self.main_gui_elements = []
+        self.game_gui_elements = []
+        self.login_entry_username = None
+        self.login_entry_password = None
+        self.game_canvas = None
+
+        # Board images
+        self.p0_rect = None
+        self.p1_rect = None
+        self.p2_rect = None
+        self.board_bg_img = None
+
+        # Init the window
+        self.init_window()
 
     def init_window(self):
         self.master.title("Four in a Row")
 
-    def create_board(self):
-
+        # TODO set dynamically
         path = '/home/yarin/Desktop/four-in-a-row/client/imgs'
-        c = Canvas(self.master, width=640, height=480)
-        c.grid()
 
-
-
-        # player1
+        # Create images for board
         im = Image.open(os.path.join(path, 'player1_rect.png'))
         resized = im.resize((90, 76), Image.ANTIALIAS)
-        p1_rect = ImageTk.PhotoImage(resized)
-        self.image_refs.append(p1_rect)
+        self.p1_rect = ImageTk.PhotoImage(resized)
 
         im = Image.open(os.path.join(path, 'player2_rect.png'))
         resized = im.resize((90, 76), Image.ANTIALIAS)
-        p2_rect = ImageTk.PhotoImage(resized)
-        self.image_refs.append(p2_rect)
+        self.p2_rect = ImageTk.PhotoImage(resized)
 
         im = Image.open(os.path.join(path, 'player0_rect.png'))
         resized = im.resize((90, 76), Image.ANTIALIAS)
-        p0_rect = ImageTk.PhotoImage(resized)
-        self.image_refs.append(p0_rect)
+        self.p0_rect = ImageTk.PhotoImage(resized)
 
-        #c.create_image(0, 0, image=tkimage, anchor='nw')
+        # board background
+        im = Image.open(os.path.join(path, 'bg.png'))
+        resized = im.resize((640, 457), Image.ANTIALIAS)
+        tkimage = ImageTk.PhotoImage(resized)
+        self.board_bg_img = tkimage
+
+    def gui_elements_remove(self, elements):
+        for element in elements:
+            element.destroy()
+
+    def create_board(self):
+
+        # TODO demo, get a board and create the graphics for it as function
         b = True
         # loop
         for x in xrange(0, (640 / 7) * 6, 90):
             b = not b
             for y in xrange(0, (457 / 7) * 6, 76):
                 if b:
-                    c.create_image(x, y, image=p1_rect, anchor='nw')
+                    self.game_canvas.create_image(x, y, image=self.p2_rect, anchor='nw')
                 else:
-                    c.create_image(x, y, image=p0_rect, anchor='nw')
+                    self.game_canvas.create_image(x, y, image=self.p0_rect, anchor='nw')
                 b = not b
-        #"""
-        # background
-        im = Image.open(os.path.join(path, 'bg.png'))
-        resized = im.resize((640, 457), Image.ANTIALIAS)
-        tkimage = ImageTk.PhotoImage(resized)
-        self.image_refs.append(tkimage)
-        c.create_image(0, 0, image=tkimage, anchor='nw')
-        #"""
 
+        self.game_canvas.create_image(0, 0, image=self.board_bg_img, anchor='nw')
 
+    def game_gui(self):
+        self.master.geometry("800x600")
 
+        label_status = Label(self.master, text="Status of the game!")
+        label_status.grid()
 
+        self.game_canvas = Canvas(self.master, width=640, height=480)
+        self.game_canvas.grid(row=1)
 
-        """
-        # background
-        im = Image.open(os.path.join(path, 'bg.png'))
-        resized = im.resize((450, 450), Image.ANTIALIAS)
-        tkimage = ImageTk.PhotoImage(resized)
-        l = Label(self.master)
-        l.image = tkimage
-        l.configure(image=l.image)
-        l.place(x=0, y=0)
-        
-        im = Image.open(os.path.join(path, 'player1.png'))
-        resized = im.resize((64, 64), Image.ANTIALIAS)
-        tkimage = ImageTk.PhotoImage(resized)
+        # todo apply command attribute
+        giveup_button = Button(self.master, text="Give up!",
+                               command=self.game_giveup_button_click)
+        giveup_button.grid(row=2)
 
-        board = []
-        for i in xrange(7):
-            line = []
-            for j in xrange(7):
-                l = Label(self.master)
-                l.image = tkimage
-                l.configure(image=l.image)
-                l.grid(row=i, column=j)
-                line.append(l)
-            board.append(line)
+        # save gui elements for login gui
+        self.game_gui_elements = [
+            label_status,
+            self.game_canvas,
+            giveup_button
+        ]
 
-        return board
-        """
+    def main_gui(self):
+        self.master.geometry("240x100")
+
+        label_welcome = Label(self.master, text="Welcome User!")
+
+        label_welcome.grid()
+
+        # todo apply command attribute
+        play_button = Button(self.master, text="Play!",
+                             command=self.main_play_button_click)
+        play_button.grid(row=1)
+        exit_button = Button(self.master, text="Exit",
+                             command=self.main_exit_button_click)
+        exit_button.grid(row=2)
+
+        # save gui elements for login gui
+        self.main_gui_elements = [
+            label_welcome,
+            play_button, exit_button
+        ]
+
+    def login_gui(self):
+        self.master.geometry("240x100")
+
+        label_welcome = Label(self.master, text="Welcome aboard. Please log in")
+        label_username = Label(self.master, text="Username")
+        label_password = Label(self.master, text="Password")
+        self.login_entry_username = Entry(self.master)
+        self.login_entry_password = Entry(self.master, show="*")
+
+        label_welcome.grid(columnspan=2)
+        label_username.grid(row=1, sticky=E)
+        label_password.grid(row=2, sticky=E)
+        self.login_entry_username.grid(row=1, column=1)
+        self.login_entry_password.grid(row=2, column=1)
+
+        # todo apply command attribute
+        login_button = Button(self.master, text="Login",
+                              command=self.login_login_button_click)
+        login_button.grid(row=3, sticky=E)
+        register_button = Button(self.master, text="Register",
+                                 command=self.login_register_button_click)
+        register_button.grid(row=3, column=1, sticky=W)
+
+        # save gui elements for login gui
+        self.login_gui_elements = [
+            label_welcome, label_username, label_password,
+            self.login_entry_username, self.login_entry_password,
+            login_button, register_button
+        ]
+
+    def game_giveup_button_click(self):
+        # just swapping to the main gui
+        self.gui_elements_remove(self.game_gui_elements)
+        self.main_gui()
+
+    def main_play_button_click(self):
+        self.gui_elements_remove(self.main_gui_elements)
+        self.game_gui()
+
+    def main_exit_button_click(self):
+        tkMessageBox.showinfo("Bye-bye", "Thank you! Exiting...")
+        #todo check about timer for that
+        sys.exit()
+
+    def login_login_button_click(self):
+        global api
+
+        username = self.login_entry_username.get()
+        password = self.login_entry_password.get()
+
+        result = api.log_in(username, password)
+
+        if result:
+            tkMessageBox.showinfo("Four-in-a-row", "Logged in!")
+            self.gui_elements_remove(self.login_gui_elements)
+            self.main_gui()
+
+        else:
+            tkMessageBox.showerror("Four-in-a-row",
+                                   "Invalid username or password, exit...")
+
+    def login_register_button_click(self):
+        global api
+
+        username = self.login_entry_username.get()
+        password = self.login_entry_password.get()
+
+        result = api.register(username, password)
+
+        if result:
+            tkMessageBox.showinfo("Four-in-a-row", "Great, please log in!")
+
+        else:
+            tkMessageBox.showerror("Four-in-a-row",
+                                   "Bad registration")
+
 
 
 
@@ -98,11 +200,14 @@ class Window(Frame):
         pass
 
 
-root = Tk()
-root.geometry("650x480")
-root.resizable(0, 0)
-app = Window(root)
+def start_graphics():
+    root = Tk()
+    root.geometry("650x480")
+    root.resizable(0, 0)
+    app = Window(root)
 
-app.create_board()
+    app.login_gui()
+    root.mainloop()
 
-root.mainloop()
+
+start_graphics()
