@@ -117,7 +117,7 @@ class Client_Handler():
                         self.player.game = player_game
                         game_id = player_game.game_id
                         self.c_socket.send("JOINED_GAME|" + str(game_id))
-                        self.logger.info("Client " + str(self.c_addr) + " joined game " + game_id)
+                        self.logger.info("Client " + str(self.c_addr) + " joined game " + str(game_id))
                         continue
                     else:
                         self.server_details.waiting_for_game_players.append(self.player.username)
@@ -200,7 +200,7 @@ class Client_Handler():
                     self.c_socket.send("GET_COMPETITOR|" + competitor)
                 else:
                     self.c_socket.send("INVALID_GAME_REQUEST")
-                    self.logger.info("Client " + str(self.c_addr) + "invalid game request")
+                    self.logger.info("Client " + str(self.c_addr) + " invalid game request")
                 continue
 
             if cmd == "GAME_IF_TURN":

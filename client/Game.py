@@ -2,31 +2,35 @@ import time
 import pprint
 import API
 
-
 class Game:
-    def __init__(self, api):
+    def __init__(self, api, game_status_line):
         self.board = []
         self.api = api
-        self.game_id = False
-        self.another_player = False
+        self.game_id = None
+        self.another_player = None
+        self.game_status_line = game_status_line
         return
+
+    def print_status(self, text):
+        self.game_status_line["text"] = text
     
     def start_game(self):
+        self.game_id = None
         result, game_id = self.api.start_game()
         if result:
-            print "Join game! " + str(game_id)
+            self.print_status("Join game! " + str(game_id))
+            self.game_id = game_id
+            self.another_player = self.api.game_get_competitor()
             return
 
         else:
-            while True:
-                print "Waiting for players..."
-                result, game_id = self.api.join_game()
-                if result:
-                    print "Join game! " + str(game_id)
-                    self.game_id = game_id
-                    return
-                else:
-                    time.sleep(3)
+            self.print_status("Waiting for players")
+            result, game_id = self.api.join_game()
+            if result:
+                self.print_status("Join game! " + str(game_id))
+                self.game_id = game_id
+                self.another_player = self.api.game_get_competitor()
+                return
 
     def set_board(self, board):
         board_lines = board.split(",")
@@ -35,38 +39,46 @@ class Game:
             self.board.append(list(board_lines[i]))
         return
 
-    def game(self):
-        print "Starting game against " + self.api.game_get_competitor()
+    def get_board(self):
+        is_winner, data = self.api.game_get_board()
+        self.set_board(data)
+
+    def game(self, col=None, need_new_board=True):
+        # print "Starting game against " + self.api.game_get_competitor()
         try:
-            while True:
-                if self.api.game_get_turn():
-                    is_winner, data = self.api.game_get_board()
-                    if is_winner:
-                        print "Winner is " + data
-                        return
-                    else:
-                        self.set_board(data)
-
-                    print "It's your turn, go ahead:"
-                    self.display_board()
-                    try:
-                        col = int(raw_input("Enter Column: "))
-
-                    except Exception:
-                        print "Invalid choice, try again..."
-                        continue
-
-                    if self.api.game_do_turn(int(col)) == "OK":
-                        print "Okay"
-                    else:
-                        print "No space left, try another column..."
+            if self.api.game_get_turn():
+                is_winner, data = self.api.game_get_board()
+                if is_winner:
+                    self.print_status("Winner is " + data)
+                    return "WINNER"
                 else:
-                    # not my turn
-                    time.sleep(0.5)
-                    print "Waiting for your competitor..."
-                    # trying again...
+                    self.set_board(data)
+
+                if need_new_board:
+                    self.print_status("It's your turn")
+                    return "DISPLAY"
+
+                if col is None:
+                    self.print_status("Please make a move")
+                    return "PLAY"
+                else:
+                    if self.api.game_do_turn(int(col)) == "OK":
+                        self.print_status("Great move.")
+                        return "WAIT"
+                    else:
+                        self.print_status("No space left, try another column...")
+                        return "PLAY"
+
+            else:
+                # not my turn
+                self.print_status("Waiting for your competitor...")
+                # Sleep in graphics class
+                return "WAIT"
+                # trying again...
         except API.GameClosedException as e:
-            print 'Game closed because {0}'.format(e.message)
+            self.print_status('Game closed because {0}'.format(e.message))
+            return "CLOSED"
+            # TODO handle game close in graphics
             # TODO another message if winning, etc...
     
     def display_board(self):
