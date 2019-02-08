@@ -71,11 +71,27 @@ class Auth_Handler:
 		password_hash = hashlib.sha256(salt + password).hexdigest()
 		conn = sqlite3.connect('users.db')
 		c = conn.cursor()
-		c.execute("INSERT INTO USERS VALUES (?, ?)", (username, password_hash,))
+		c.execute("INSERT INTO USERS VALUES (?, ?, ?)", (username, password_hash,0,))
 		conn.commit()
 		conn.close()
 
 		return True
 
+	def get_username_score(self, username):
+		conn = sqlite3.connect('users.db')
+		c = conn.cursor()
+		c.execute("SELECT * FROM USERS where username=?", (username,))
+		line = c.fetchone()
+		conn.commit()
+		conn.close()
+
+		if line:
+			# got the user
+			return int(line[2])
+
+		return None
+
+	def update_username_score(self):
+		pass
 
 

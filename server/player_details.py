@@ -3,3 +3,4 @@ class Player_Details():
         self.logged_in = False
         self.username = ""
         self.game = None
+        self.score = None

@@ -24,6 +24,10 @@ class Client_Handler():
             if not data:
                 self.logger.info("Client " + str(self.c_addr) + " blank data, disconnecting...")
 
+                # Remove from logged in players list, if logged in...
+                if self.player.username:
+                    self.server_details.logged_in_players.remove(self.player.username)
+
                 # If in game, remove
                 g = self.server_details.find_player_in_games(self.player.username)
                 if g:
@@ -61,10 +65,19 @@ class Client_Handler():
                 # TODO Save username password etc...
                 result, cookie = self.auth_handler.log_in(username, password)
                 if result:
-                    self.player.logged_in = True
-                    self.player.username = username
-                    self.c_socket.send("AUTH_SUCCESS|{0}".format(cookie))
-                    self.logger.info("Client " + username + " successfully logged in!")
+                    if username in self.server_details.logged_in_players:
+                        self.c_socket.send("AUTH_FAILURE")
+                        self.logger.info("Client " + username + " already logged in")
+                    else:
+                        self.player.logged_in = True
+                        self.player.username = username
+                        self.server_details.logged_in_players.append(username)
+                        self.c_socket.send("AUTH_SUCCESS|{0}".format(cookie))
+                        self.logger.info("Client " + username + " successfully logged in!")
+
+                        # Get score
+                        self.player.score = self.auth_handler.get_username_score(self.player.username)
+
                     continue
                 else:
                     self.c_socket.send("AUTH_FAILURE")
@@ -80,6 +93,13 @@ class Client_Handler():
                     continue
                 username = auth_details[0]
                 password = auth_details[1]
+
+                # check length of username
+                if len(username) > 15:
+                    self.c_socket.send("REGISTER_FAILURE")
+                    self.logger.info("Client " + username + " failed registration, username too long")
+                    continue
+
                 result = self.auth_handler.register(username, password)
                 if result:
                     self.c_socket.send("REGISTER_SUCCESS")
@@ -108,6 +128,12 @@ class Client_Handler():
 
             # Logged in!
             # Now just the important features
+            if cmd == "GETSCORE":
+                self.c_socket.send("GETSCORE|" + str(self.player.score))
+                self.logger.info("Client " + str(self.c_addr) + " requested score info, {score}".
+                                 format(score=self.player.score))
+                continue
+
             if cmd == "STARTGAME":
                 print repr(self.server_details.games)
                 print repr(self.server_details.waiting_for_game_players)

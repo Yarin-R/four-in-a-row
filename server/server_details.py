@@ -2,6 +2,7 @@ class Server_Details:
     def __init__(self):
         self.waiting_for_game_players = []
         self.games = []
+        self.logged_in_players = []
 
     def find_player_in_games(self, username):
         for g in self.games:

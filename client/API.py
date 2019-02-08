@@ -14,6 +14,7 @@ class API:
         self.address = "127.0.0.1"
         self.port = 9999
         self.sock = None
+        self.username = None
         return
 
     def request(self, cmd, params):
@@ -37,6 +38,17 @@ class API:
         # Asking the server for current player info!
         pass
 
+    def get_my_username(self):
+        return self.username
+
+    def get_my_score(self):
+        response = self.request("GETSCORE", "")
+        resp_array = response.split("|")
+        if resp_array[0] == "GETSCORE":
+            return int(resp_array[1])
+
+        return -1
+
     def get_leaderboard(self):
         # return a list of players
         pass
@@ -48,6 +60,7 @@ class API:
         if resp_array[0] == "AUTH_SUCCESS":
             # todo check if cookie exists
             self.cookie = resp_array[1]
+            self.username = username
             return True
         else:
             return False

@@ -114,21 +114,24 @@ class Window(Frame):
     def main_gui(self):
         self.master.geometry("240x100")
 
-        label_welcome = Label(self.master, text="Welcome User!")
-
+        label_welcome = Label(self.master, text="Welcome {username}!".format(username=api.get_my_username()))
         label_welcome.grid()
+
+        label_score = Label(self.master, text="Score: {score}!".format(score=api.get_my_score()))
+        label_score.grid(row=1)
 
         # todo apply command attribute
         play_button = Button(self.master, text="Play!",
                              command=self.main_play_button_click)
-        play_button.grid(row=1)
+        play_button.grid(row=2)
         exit_button = Button(self.master, text="Exit",
                              command=self.main_exit_button_click)
-        exit_button.grid(row=2)
+        exit_button.grid(row=3)
 
         # save gui elements for login gui
         self.main_gui_elements = [
             label_welcome,
+            label_score,
             play_button, exit_button
         ]
 
