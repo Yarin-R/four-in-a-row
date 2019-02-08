@@ -169,12 +169,16 @@ class Client_Handler():
                         self.player.game = None
                         continue
 
-                    winner = self.player.game.get_winner()
-                    if winner:
-                        self.c_socket.send("GET_BOARD|WINNER,{0}".format(winner))
-                        self.player.game.game_close_reason = "WINNING|{0}".format(winner)
-                    else:
+                    if params == "IGNORE_WINNER":
                         self.c_socket.send("GET_BOARD|" + self.player.game.get_board())
+                    else:
+                        winner = self.player.game.get_winner()
+                        if winner:
+                            self.c_socket.send("GET_BOARD|WINNER,{winner},{board}".format(winner=winner,
+                                                                                          board=self.player.game.get_board()))
+                            self.player.game.game_close_reason = "WINNING|{0}".format(winner)
+                        else:
+                            self.c_socket.send("GET_BOARD|" + self.player.game.get_board())
                 else:
                     self.c_socket.send("INVALID_GAME_REQUEST")
                     self.logger.info("Client " + str(self.c_addr) + "invalid game request")

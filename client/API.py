@@ -87,16 +87,21 @@ class API:
         elif resp_array[0] == "WAITING_GAME":
             return False, False
 
-    def game_get_board(self):
+    def game_get_board(self, ignore_winner=False):
         # Getting the board or the if you are the winner or not
-        data = self.request("GAME_BOARD", "")
+        if ignore_winner:
+            data = self.request("GAME_BOARD", "IGNORE_WINNER")
+        else:
+            data = self.request("GAME_BOARD", "")
+
         resp_array = data.split("|")
         if resp_array[0] == "GAME_CLOSED":
             raise GameClosedException(resp_array[1])
         if resp_array[1].startswith("WINNER"):
             # do something about winner
             username_winner = resp_array[1].split(",")[1]
-            return True, username_winner
+
+            return username_winner, ",".join(resp_array[1].split(",")[2:])
         else:
             return False, resp_array[1]
 

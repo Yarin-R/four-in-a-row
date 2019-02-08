@@ -14,7 +14,7 @@ class Game:
         self.create_board()
 
     def get_winner(self):
-        for i in range(0, 7):
+        for i in range(0, 6):
             for j in range(0, 7):
                 if self.check_winner(i, j):
                     if self.game_board[j][i] == 'B':
@@ -84,7 +84,7 @@ class Game:
 
     def create_board(self):
         self.game_board = []
-        for i in range(0, 7):
+        for i in range(0, 6):
             self.game_board.append([])
             for j in range(0, 7):
                 self.game_board[i].append("-")

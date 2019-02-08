@@ -67,23 +67,26 @@ class Window(Frame):
             element.destroy()
 
     def create_board(self, board):
-        i = 6
+        i = 5
         j = 0
 
         pprint.pprint(board)
 
-        # loop
-        for x in xrange(0, (640 / 7) * 6, 90):
-            j = 0
-            for y in xrange(0, (457 / 7) * 6, 76):
+        y = 0
+        for i in xrange(5, -1, -1):
+            x = 0
+            for j in xrange(0, 7, 1):
                 if board[i][j] == '-':
                     self.game_canvas.create_image(x, y, image=self.p0_rect, anchor='nw')
+                    #print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
                 elif board[i][j] == 'B':
                     self.game_canvas.create_image(x, y, image=self.p1_rect, anchor='nw')
+                    #print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
                 elif board[i][j] == 'R':
                     self.game_canvas.create_image(x, y, image=self.p2_rect, anchor='nw')
-                j += 1
-            i -= 1
+                    #print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
+                x += 90
+            y += 76
 
         self.game_canvas.create_image(0, 0, image=self.board_bg_img, anchor='nw')
 
@@ -192,6 +195,7 @@ class Window(Frame):
         status = self.game.game(self.game_col, self.game_need_new_board)
         print status
         if status == "WINNER":
+            self.display_game_board()
             tkMessageBox.showinfo("Four-in-a-row",
                                   "End of game!")
         elif status == "DISPLAY":
@@ -199,6 +203,7 @@ class Window(Frame):
             self.game_need_new_board = False
             self.after(300, self.game_interval)
         elif status == "WAIT":
+            self.display_game_board()
             self.game_col = None
             self.game_need_new_board = True
             self.after(300, self.game_interval)

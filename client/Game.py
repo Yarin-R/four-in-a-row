@@ -40,19 +40,18 @@ class Game:
         return
 
     def get_board(self):
-        is_winner, data = self.api.game_get_board()
+        is_winner, data = self.api.game_get_board(ignore_winner=True)
         self.set_board(data)
 
     def game(self, col=None, need_new_board=True):
         # print "Starting game against " + self.api.game_get_competitor()
         try:
             if self.api.game_get_turn():
-                is_winner, data = self.api.game_get_board()
-                if is_winner:
-                    self.print_status("Winner is " + data)
+                winner, data = self.api.game_get_board()
+                self.set_board(data)
+                if winner:
+                    self.print_status("Winner is " + winner)
                     return "WINNER"
-                else:
-                    self.set_board(data)
 
                 if need_new_board:
                     self.print_status("It's your turn")
@@ -64,6 +63,7 @@ class Game:
                 else:
                     if self.api.game_do_turn(int(col)) == "OK":
                         self.print_status("Great move.")
+                        self.get_board()
                         return "WAIT"
                     else:
                         self.print_status("No space left, try another column...")
@@ -73,6 +73,7 @@ class Game:
                 # not my turn
                 self.print_status("Waiting for your competitor...")
                 # Sleep in graphics class
+
                 return "WAIT"
                 # trying again...
         except API.GameClosedException as e:
