@@ -1,6 +1,6 @@
 import pprint
 import API
-
+import time
 
 class Game:
     def __init__(self, api, game_status_line):
@@ -9,6 +9,7 @@ class Game:
         self.game_id = None
         self.another_player = None
         self.game_status_line = game_status_line
+        self.time_wait = None
         return
 
     def print_status(self, text):
@@ -43,6 +44,16 @@ class Game:
         is_winner, data = self.api.game_get_board(ignore_winner=True)
         self.set_board(data)
 
+    def printable_time_left(self):
+        max_time = 59
+        diff_time = int(round(time.time() - self.time_wait))
+        # For now, max is 59 seconds
+        if diff_time > max_time:
+            self.api.game_close()
+            raise API.GameClosedException("TIME_UP")
+        else:
+            return max_time - diff_time
+
     def game(self, col=None, need_new_board=True):
         # print "Starting game against " + self.api.game_get_competitor()
         try:
@@ -55,10 +66,13 @@ class Game:
 
                 if need_new_board:
                     self.print_status("It's your turn")
+                    self.time_wait = time.time()
                     return "DISPLAY"
 
                 if col is None:
-                    self.print_status("Please make a move")
+                    self.print_status("Please make a move, {time}s left!".format(
+                        time=self.printable_time_left()
+                    ))
                     return "PLAY"
                 else:
                     if self.api.game_do_turn(int(col)) == "OK":
