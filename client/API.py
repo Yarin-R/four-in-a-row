@@ -51,7 +51,9 @@ class API:
 
     def get_leaderboard(self):
         # return a list of players
-        pass
+        data = self.request("GETLEADERBOARD", "")
+        resp_array = data.split("|")
+        return resp_array[1].split(',')
 
     def log_in(self, username, password):
         response = self.request("GETAUTH", username + ":" + password)
@@ -121,12 +123,18 @@ class API:
     def game_get_turn(self):
         data = self.request("GAME_IF_TURN", "")
         resp_array = data.split("|")
+        if resp_array[0] == "INVALID_GAME_REQUEST":
+            raise GameClosedException("GAME_CLOSED")
         if resp_array[0] == "GAME_CLOSED":
             raise GameClosedException(resp_array[1])
         if resp_array[1] == "True":
             return True
         else:
             return False
+
+    def game_close(self):
+        data = self.request("GAME_CLOSE", "")
+        return True
 
     def game_do_turn(self, col):
         data = self.request("GAME_DO_TURN", str(col))

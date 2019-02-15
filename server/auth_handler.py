@@ -91,7 +91,25 @@ class Auth_Handler:
 
 		return None
 
-	def update_username_score(self):
-		pass
+	def increase_username_score(self, username):
+		current_score = self.get_username_score(username)
+		conn = sqlite3.connect('users.db')
+		c = conn.cursor()
+		c.execute("UPDATE USERS SET score=? WHERE username=?", (current_score + 1, username,))
+		conn.commit()
+		conn.close()
 
+	def get_leaderboard(self, count=5):
+		s = ""
+		conn = sqlite3.connect('users.db')
+		c = conn.cursor()
+		c.execute("SELECT username, score FROM USERS ORDER BY score DESC LIMIT ?", (count,))
+		arr = c.fetchall()
+		for i in arr:
+			s += "{username}:{score},".format(username=str(i[0]), score=i[1])
 
+		if len(arr) < count:
+			for j in xrange(count - len(arr)):
+				s += "---:---,"
+
+		return s[:-1]

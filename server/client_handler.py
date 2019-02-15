@@ -129,9 +129,17 @@ class Client_Handler():
             # Logged in!
             # Now just the important features
             if cmd == "GETSCORE":
+                self.player.score = self.auth_handler.get_username_score(self.player.username)
                 self.c_socket.send("GETSCORE|" + str(self.player.score))
                 self.logger.info("Client " + str(self.c_addr) + " requested score info, {score}".
                                  format(score=self.player.score))
+                continue
+
+            if cmd == "GETLEADERBOARD":
+                data = self.auth_handler.get_leaderboard()
+                self.c_socket.send("GETLEADERBOARD|" + str(data))
+                self.logger.info("Client " + str(self.c_addr) + " requested leaderboard info, {data}".
+                                 format(data=data))
                 continue
 
             if cmd == "STARTGAME":
@@ -182,6 +190,22 @@ class Client_Handler():
                         self.logger.info("Client " + str(self.c_addr) + " asked for players")
                     continue
 
+            if cmd == "GAME_CLOSE":
+                if self.player.game:
+                    self.player.game.game_close_reason = "GIVE_UP"
+                    self.c_socket.send('GAME_CLOSED|{0}'.format(self.player.game.game_close_reason))
+                    self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
+                                                                           self.player.game.game_close_reason))
+                    self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
+                                                                                   self.player.game.player_one,
+                                                                                   self.player.game.player_two))
+                    try:
+                        self.server_details.games.remove(self.player.game)
+                    except ValueError:
+                        self.logger.info('Game {0} already closed'.format(self.player.game.game_id))
+                    self.player.game = None
+                    continue
+
             if cmd == "GAME_BOARD":
                 if self.player.game:
                     if self.player.game.game_close_reason is not None:
@@ -189,9 +213,12 @@ class Client_Handler():
                         self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
                                                                                self.player.game.game_close_reason))
                         self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
-                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_one,
                                                                                        self.player.game.player_two))
-                        self.server_details.games.remove(self.player.game)
+                        try:
+                            self.server_details.games.remove(self.player.game)
+                        except ValueError:
+                            self.logger.info('Game {0} already closed'.format(self.player.game.game_id))
                         self.player.game = None
                         continue
 
@@ -202,7 +229,10 @@ class Client_Handler():
                         if winner:
                             self.c_socket.send("GET_BOARD|WINNER,{winner},{board}".format(winner=winner,
                                                                                           board=self.player.game.get_board()))
-                            self.player.game.game_close_reason = "WINNING|{0}".format(winner)
+                            self.player.game.game_close_reason = "WINNING,{0}".format(winner)
+
+                            # Add score to the winner
+                            self.auth_handler.increase_username_score(username=winner)
                         else:
                             self.c_socket.send("GET_BOARD|" + self.player.game.get_board())
                 else:
@@ -217,9 +247,12 @@ class Client_Handler():
                         self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
                                                                                self.player.game.game_close_reason))
                         self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
-                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_one,
                                                                                        self.player.game.player_two))
-                        self.server_details.games.remove(self.player.game)
+                        try:
+                            self.server_details.games.remove(self.player.game)
+                        except ValueError:
+                            self.logger.info('Game {0} already closed'.format(self.player.game.game_id))
                         self.player.game = None
                         continue
 
@@ -240,9 +273,12 @@ class Client_Handler():
                         self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
                                                                                self.player.game.game_close_reason))
                         self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
-                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_one,
                                                                                        self.player.game.player_two))
-                        self.server_details.games.remove(self.player.game)
+                        try:
+                            self.server_details.games.remove(self.player.game)
+                        except ValueError:
+                            self.logger.info('Game {0} already closed'.format(self.player.game.game_id))
                         self.player.game = None
                         continue
 
@@ -263,9 +299,12 @@ class Client_Handler():
                         self.logger.info("Closing game {0} because {1}".format(self.player.game.game_id,
                                                                                self.player.game.game_close_reason))
                         self.logger.info("Closing game {0} between {1} and {2}".format(self.player.game.game_id,
-                                                                                       self.player.game.player_two,
+                                                                                       self.player.game.player_one,
                                                                                        self.player.game.player_two))
-                        self.server_details.games.remove(self.player.game)
+                        try:
+                            self.server_details.games.remove(self.player.game)
+                        except ValueError:
+                            self.logger.info('Game {0} already closed'.format(self.player.game.game_id))
                         self.player.game = None
                         continue
 

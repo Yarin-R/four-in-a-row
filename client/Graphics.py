@@ -18,6 +18,7 @@ class Window(Frame):
         self.login_gui_elements = []
         self.main_gui_elements = []
         self.game_gui_elements = []
+        self.leaderboard_gui_elements = []
         self.login_entry_username = None
         self.login_entry_password = None
         self.game_canvas = None
@@ -112,7 +113,7 @@ class Window(Frame):
         ]
 
     def main_gui(self):
-        self.master.geometry("240x100")
+        self.master.geometry("240x150")
 
         label_welcome = Label(self.master, text="Welcome {username}!".format(username=api.get_my_username()))
         label_welcome.grid()
@@ -124,16 +125,49 @@ class Window(Frame):
         play_button = Button(self.master, text="Play!",
                              command=self.main_play_button_click)
         play_button.grid(row=2)
+        leaderboard_button = Button(self.master, text="Leaderboard",
+                             command=self.main_leaderboard_button_click)
+        leaderboard_button.grid(row=3)
         exit_button = Button(self.master, text="Exit",
                              command=self.main_exit_button_click)
-        exit_button.grid(row=3)
+        exit_button.grid(row=4)
 
         # save gui elements for login gui
         self.main_gui_elements = [
             label_welcome,
             label_score,
+            leaderboard_button,
             play_button, exit_button
         ]
+
+    def leaderboard_gui(self, leaderboard_arr):
+        self.master.geometry("800x600")
+
+        label_title = Label(self.master, text="Leaderboard")
+        label_title.grid(row=1)
+        place_1_label = Label(self.master, text=leaderboard_arr[0])
+        place_2_label = Label(self.master, text=leaderboard_arr[1])
+        place_3_label = Label(self.master, text=leaderboard_arr[2])
+        place_4_label = Label(self.master, text=leaderboard_arr[3])
+        place_5_label = Label(self.master, text=leaderboard_arr[4])
+
+        place_1_label.grid(row=2)
+        place_2_label.grid(row=3)
+        place_3_label.grid(row=4)
+        place_4_label.grid(row=5)
+        place_5_label.grid(row=6)
+
+        exit_button = Button(self.master, text="Exit",
+                             command=self.leaderboard_exit_button_click)
+        exit_button.grid(row=7)
+
+        self.leaderboard_gui_elements = [
+            label_title,
+            place_1_label, place_2_label, place_3_label,
+            place_4_label, place_5_label,
+            exit_button
+        ]
+
 
     def login_gui(self):
         self.master.geometry("240x100")
@@ -164,10 +198,20 @@ class Window(Frame):
             login_button, register_button
         ]
 
+    def leaderboard_exit_button_click(self):
+        self.gui_elements_remove(self.leaderboard_gui_elements)
+        self.main_gui()
+
     def game_giveup_button_click(self):
         # just swapping to the main gui
+        api.game_close()
         self.gui_elements_remove(self.game_gui_elements)
         self.main_gui()
+
+    def main_leaderboard_button_click(self):
+        arr = api.get_leaderboard()
+        self.gui_elements_remove(self.main_gui_elements)
+        self.leaderboard_gui(arr)
 
     def main_play_button_click(self):
         self.gui_elements_remove(self.main_gui_elements)
@@ -200,7 +244,7 @@ class Window(Frame):
         if status == "WINNER":
             self.display_game_board()
             tkMessageBox.showinfo("Four-in-a-row",
-                                  "End of game!")
+                                  "Game Completed!")
         elif status == "DISPLAY":
             self.display_game_board()
             self.game_need_new_board = False

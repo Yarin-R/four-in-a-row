@@ -1,6 +1,6 @@
-import time
 import pprint
 import API
+
 
 class Game:
     def __init__(self, api, game_status_line):
@@ -77,8 +77,17 @@ class Game:
                 return "WAIT"
                 # trying again...
         except API.GameClosedException as e:
-            self.print_status('Game closed because {0}'.format(e.message))
-            return "CLOSED"
+            if e.message.split(',')[0] == "WINNING":
+                excp_message = e.message.split(',')
+                if len(excp_message) == 2:
+                    winner = excp_message[1]
+                else:
+                    winner = e.message
+                self.print_status('{winner} won the game!'.format(winner=winner))
+                return "WINNER"
+            else:
+                self.print_status('Game closed because {0}'.format(e.message))
+                return "CLOSED"
             # TODO handle game close in graphics
             # TODO another message if winning, etc...
     
