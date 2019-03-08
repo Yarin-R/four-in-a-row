@@ -32,6 +32,7 @@ class Window(Frame):
         self.p1_rect = None
         self.p2_rect = None
         self.board_bg_img = None
+        self.main_bg = None
 
         # Init the window
         self.init_window()
@@ -79,13 +80,13 @@ class Window(Frame):
             for j in xrange(0, 7, 1):
                 if board[i][j] == '-':
                     self.game_canvas.create_image(x, y, image=self.p0_rect, anchor='nw')
-                    #print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
+                    # print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
                 elif board[i][j] == 'B':
                     self.game_canvas.create_image(x, y, image=self.p1_rect, anchor='nw')
-                    #print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
+                    # print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
                 elif board[i][j] == 'R':
                     self.game_canvas.create_image(x, y, image=self.p2_rect, anchor='nw')
-                    #print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
+                    # print "{i}.{j},{x},{y},{c}".format(i=i, j=j, x=x, y=y, c=board[i][j])
                 x += 90
             y += 76
 
@@ -113,27 +114,60 @@ class Window(Frame):
         ]
 
     def main_gui(self):
-        self.master.geometry("240x150")
+        self.master.geometry("640x400")
 
-        label_welcome = Label(self.master, text="Welcome {username}!".format(username=api.get_my_username()))
-        label_welcome.grid()
+        # board background
+        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/bg_main.png")
+        resized = im.resize((640, 400), Image.ANTIALIAS)
+        self.main_bg = ImageTk.PhotoImage(resized)
+        c = Canvas(self.master, width=640, height=400)
+        c.create_image(0, 0, image=self.main_bg, anchor='nw')
+        c.place(x=0, y=0)
 
-        label_score = Label(self.master, text="Score: {score}!".format(score=api.get_my_score()))
-        label_score.grid(row=1)
+        # configure grid
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_rowconfigure(6, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+        self.master.grid_columnconfigure(2, weight=1)
+
+        label_welcome = Label(self.master, fg="red", font="Times",
+                              text="Welcome {username}!".format(username=api.get_my_username()))
+        label_welcome.grid(row=1, column=1)
+
+        label_score = Label(self.master, fg="red", font="Times", text="Score: {score}!".format(score=api.get_my_score()))
+        label_score.grid(row=2, column=1)
 
         # todo apply command attribute
-        play_button = Button(self.master, text="Play!",
+        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/button_play_bg.png")
+        resized = im.resize((180, 39), Image.ANTIALIAS)
+
+        play_button = Button(self.master, fg="red",
                              command=self.main_play_button_click)
-        play_button.grid(row=2)
+        play_button.photo_ref = ImageTk.PhotoImage(resized)
+        play_button.config(image=play_button.photo_ref, borderwidth=0, width=180, height=39)
+        play_button.grid(row=3, column=1)
+
+        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/button_leaderboard_bg.png")
+        resized = im.resize((180, 39), Image.ANTIALIAS)
         leaderboard_button = Button(self.master, text="Leaderboard",
-                             command=self.main_leaderboard_button_click)
-        leaderboard_button.grid(row=3)
-        exit_button = Button(self.master, text="Exit",
+                                    command=self.main_leaderboard_button_click)
+        leaderboard_button.photo_ref = ImageTk.PhotoImage(resized)
+        leaderboard_button.config(image=leaderboard_button.photo_ref, borderwidth=0, width=180, height=39)
+        leaderboard_button.grid(row=4, column=1)
+
+        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/button_exit_bg.png")
+        resized = im.resize((180, 39), Image.ANTIALIAS)
+        exit_button = Button(self.master, text="Exit", fg="red", font="Times",
                              command=self.main_exit_button_click)
-        exit_button.grid(row=4)
+        exit_button.photo_ref = ImageTk.PhotoImage(resized)
+        exit_button.config(image=exit_button.photo_ref, borderwidth=0, width=180, height=39)
+        exit_button.grid(row=5, column=1)
+
+
 
         # save gui elements for login gui
         self.main_gui_elements = [
+            c,
             label_welcome,
             label_score,
             leaderboard_button,

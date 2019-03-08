@@ -1,9 +1,11 @@
 import logging
 
-class Logger():
+
+class Logger:
 	def __init__(self, log_class):
 		self.log_class = log_class
-		logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+		logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG, filename="server.log")
+		logging.getLogger().addHandler((logging.StreamHandler()))
 
 	def info(self, msg):
 		logging.info("[{0}] {1}".format(self.log_class, msg))

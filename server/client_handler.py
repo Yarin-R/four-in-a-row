@@ -35,7 +35,7 @@ class Client_Handler():
 
                 # If in waiting list, remove
                 if self.player.username in self.server_details.waiting_for_game_players:
-                    self.server_details.waiting_for_game_players.remove(self.player.username)
+                    self.server_details.remove_player_from_waiting(self.player.username)
                     print repr(self.server_details.games)
                     print repr(self.server_details.waiting_for_game_players)
                     self.logger.info("Client " + str(self.c_addr) + " removed from waiting list")
@@ -180,8 +180,8 @@ class Client_Handler():
                             found_game = True
                             self.player.game = new_game
                             self.server_details.games.append(new_game)
-                            self.server_details.waiting_for_game_players.remove(player)
-                            self.server_details.waiting_for_game_players.remove(self.player.username)
+                            self.server_details.remove_player_from_waiting(player)
+                            self.server_details.remove_player_from_waiting(self.player.username)
                             self.c_socket.send("JOINED_GAME|" + str(new_game.game_id))
                             self.logger.info("Client " + str(self.c_addr) + " joined game " + str(new_game.game_id))
                             break
@@ -204,6 +204,13 @@ class Client_Handler():
                     except ValueError:
                         self.logger.info('Game {0} already closed'.format(self.player.game.game_id))
                     self.player.game = None
+                    continue
+
+                elif self.player.username in self.server_details.waiting_for_game_players:
+                    self.server_details.remove_player_from_waiting(self.player.username)
+                    self.c_socket.send('GAME_CLOSED|{reason}'.format(reason="GIVE_UP"))
+                    print self.server_details.waiting_for_game_players
+                    self.logger.info("Client " + str(self.c_addr) + " gave up on waiting to play!")
                     continue
 
             if cmd == "GAME_BOARD":
@@ -318,5 +325,5 @@ class Client_Handler():
             # Else
             else:
                 self.c_socket.send("INVALID_REQUEST")
-                self.logger.info("Client " + str(self.c_addr) + "invalid request")
+                self.logger.info("Client " + str(self.c_addr) + " invalid request, {data}".format(data=data))
 

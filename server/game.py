@@ -28,16 +28,48 @@ class Game:
         try:
             if self.game_board[line][x] is "R" or self.game_board[line][x] is "B":
                 kind = self.game_board[line][x]
-                if kind is self.game_board[line][x + 1] and kind is self.game_board[line][x + 2] and kind is self.game_board[line][x + 3]:
-                    return True
-                if kind is self.game_board[line + 1][x + 1] and kind is self.game_board[line + 2][x + 2] and kind is self.game_board[line + 3][
-                    x + 3]:
-                    return True
-                if kind is self.game_board[line + 1][x] and kind is self.game_board[line + 2][x] and kind is self.game_board[line + 3][x]:
-                    return True
-                if kind is self.game_board[line + 1][x - 1] and kind is self.game_board[line + 2][x - 2] and kind is self.game_board[line + 3][
-                    x - 3]:
-                    return True
+                try:
+                    if kind is self.game_board[line][x + 1] and kind is self.game_board[line][x + 2] and \
+                            kind is self.game_board[line][x + 3]:
+                        return True
+                except Exception:
+                    pass
+
+                try:
+                    if kind is self.game_board[line + 1][x + 1] and kind is self.game_board[line + 2][x + 2] and \
+                            kind is self.game_board[line + 3][x + 3]:
+                        return True
+                except Exception:
+                    pass
+
+                try:
+                    if kind is self.game_board[line + 1][x] and kind is self.game_board[line + 2][x] and \
+                            kind is self.game_board[line + 3][x]:
+                        return True
+                except Exception:
+                    pass
+
+                try:
+                    if kind is self.game_board[line + 1][x - 1] and kind is self.game_board[line + 2][x - 2] \
+                            and kind is self.game_board[line + 3][x - 3]:
+                        return True
+                except Exception:
+                    pass
+
+                try:
+                    if kind is self.game_board[line - 1][x + 1] and kind is self.game_board[line - 2][x + 2] \
+                            and kind is self.game_board[line - 3][x + 3]:
+                        return True
+                except Exception:
+                    pass
+
+                try:
+                    if kind is self.game_board[line - 1][x - 1] and kind is self.game_board[line - 2][x - 2] \
+                            and kind is self.game_board[line - 3][x - 3]:
+                        return True
+                except Exception:
+                    pass
+
         except Exception as e:
             pass
         return False

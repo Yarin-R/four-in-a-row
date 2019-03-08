@@ -1,5 +1,5 @@
 import Game
-import API
+import APIException
 
 api = API.API()
 

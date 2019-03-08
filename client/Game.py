@@ -13,8 +13,11 @@ class Game:
         return
 
     def print_status(self, text):
-        self.game_status_line["text"] = text
-    
+        try:
+            self.game_status_line["text"] = text
+        except Exception:
+            pass
+
     def start_game(self):
         self.game_id = None
         result, game_id = self.api.start_game()
