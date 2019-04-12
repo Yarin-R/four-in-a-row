@@ -62,7 +62,6 @@ class Client_Handler():
                     continue
                 username = auth_details[0]
                 password = auth_details[1]
-                # TODO Save username password etc...
                 result, cookie = self.auth_handler.log_in(username, password)
                 if result:
                     if username in self.server_details.logged_in_players:
@@ -83,8 +82,6 @@ class Client_Handler():
                     self.c_socket.send("AUTH_FAILURE")
                     self.logger.info("Client " + username + " failed authentication")
                     continue
-                    # TODO Check how many times of failure
-                    # TODO block login if brute force in place
 
             if cmd == "REGISTERAUTH":
                 auth_details = params.split(":")
@@ -109,8 +106,6 @@ class Client_Handler():
                     self.c_socket.send("REGISTER_FAILURE")
                     self.logger.info("Client " + username + " failed registration, try another username")
                     continue
-                    # TODO Check how many times of failure
-                    # TODO block login if brute force in place
 
             if self.auth_handler.check_cookie(cookie):
                 self.player.logged_in = True

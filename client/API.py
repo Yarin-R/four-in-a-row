@@ -60,7 +60,6 @@ class API:
         resp_array = response.split("|")
 
         if resp_array[0] == "AUTH_SUCCESS":
-            # todo check if cookie exists
             self.cookie = resp_array[1]
             self.username = username
             return True

@@ -15,6 +15,7 @@ class Window(Frame):
         Frame.__init__(self, master)
         self.master = master
         self.image_refs = []
+        self.imgs_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'imgs')
         self.login_gui_elements = []
         self.main_gui_elements = []
         self.game_gui_elements = []
@@ -40,26 +41,23 @@ class Window(Frame):
     def init_window(self):
         self.master.title("Four in a Row")
 
-        # TODO set dynamically
-        path = '/home/yarin/Desktop/four-in-a-row/client/imgs'
-
         # Create images for board
         # Blue
-        im = Image.open(os.path.join(path, 'player1_rect.png'))
+        im = Image.open(os.path.join(self.imgs_path, 'player1_rect.png'))
         resized = im.resize((90, 76), Image.ANTIALIAS)
         self.p1_rect = ImageTk.PhotoImage(resized)
 
         # Red
-        im = Image.open(os.path.join(path, 'player2_rect.png'))
+        im = Image.open(os.path.join(self.imgs_path, 'player2_rect.png'))
         resized = im.resize((90, 76), Image.ANTIALIAS)
         self.p2_rect = ImageTk.PhotoImage(resized)
 
-        im = Image.open(os.path.join(path, 'player0_rect.png'))
+        im = Image.open(os.path.join(self.imgs_path, 'player0_rect.png'))
         resized = im.resize((90, 76), Image.ANTIALIAS)
         self.p0_rect = ImageTk.PhotoImage(resized)
 
         # board background
-        im = Image.open(os.path.join(path, 'bg.png'))
+        im = Image.open(os.path.join(self.imgs_path, 'bg.png'))
         resized = im.resize((640, 457), Image.ANTIALIAS)
         tkimage = ImageTk.PhotoImage(resized)
         self.board_bg_img = tkimage
@@ -117,7 +115,7 @@ class Window(Frame):
         self.master.geometry("640x400")
 
         # board background
-        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/bg_main.png")
+        im = Image.open(os.path.join(self.imgs_path, "bg_main.png"))
         resized = im.resize((640, 400), Image.ANTIALIAS)
         self.main_bg = ImageTk.PhotoImage(resized)
         c = Canvas(self.master, width=640, height=400)
@@ -137,8 +135,7 @@ class Window(Frame):
         label_score = Label(self.master, fg="red", font="Times", text="Score: {score}!".format(score=api.get_my_score()))
         label_score.grid(row=2, column=1)
 
-        # todo apply command attribute
-        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/button_play_bg.png")
+        im = Image.open(os.path.join(self.imgs_path, "button_play_bg.png"))
         resized = im.resize((180, 39), Image.ANTIALIAS)
 
         play_button = Button(self.master, fg="red",
@@ -147,7 +144,7 @@ class Window(Frame):
         play_button.config(image=play_button.photo_ref, borderwidth=0, width=180, height=39)
         play_button.grid(row=3, column=1)
 
-        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/button_leaderboard_bg.png")
+        im = Image.open(os.path.join(self.imgs_path, "button_leaderboard_bg.png"))
         resized = im.resize((180, 39), Image.ANTIALIAS)
         leaderboard_button = Button(self.master, text="Leaderboard",
                                     command=self.main_leaderboard_button_click)
@@ -155,7 +152,7 @@ class Window(Frame):
         leaderboard_button.config(image=leaderboard_button.photo_ref, borderwidth=0, width=180, height=39)
         leaderboard_button.grid(row=4, column=1)
 
-        im = Image.open("/home/yarin/Desktop/four-in-a-row/client/imgs/button_exit_bg.png")
+        im = Image.open(os.path.join(self.imgs_path, "button_exit_bg.png"))
         resized = im.resize((180, 39), Image.ANTIALIAS)
         exit_button = Button(self.master, text="Exit", fg="red", font="Times",
                              command=self.main_exit_button_click)
@@ -201,7 +198,6 @@ class Window(Frame):
             place_4_label, place_5_label,
             exit_button
         ]
-
 
     def login_gui(self):
         self.master.geometry("240x100")
@@ -318,7 +314,6 @@ class Window(Frame):
 
     def main_exit_button_click(self):
         tkMessageBox.showinfo("Bye-bye", "Thank you! Exiting...")
-        #todo check about timer for that
         sys.exit()
 
     def login_login_button_click(self):

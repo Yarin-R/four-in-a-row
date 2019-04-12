@@ -105,10 +105,7 @@ class Game:
             else:
                 self.print_status('Game closed because {0}'.format(e.message))
                 return "CLOSED"
-            # TODO handle game close in graphics
-            # TODO another message if winning, etc...
-    
+
     def display_board(self):
-        # todo Reverse!
         pprint.pprint(self.board)
         return
