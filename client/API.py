@@ -11,7 +11,7 @@ class API:
     def __init__(self):
         self.cookie = ""
         self.logged_in = False
-        self.address = "127.0.0.1"
+        self.address = "yarin-four-game.tk"
         self.port = 9999
         self.sock = None
         self.username = None

@@ -1,5 +1,5 @@
 .idea/
-server/cookies/*
+#server/cookies/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
