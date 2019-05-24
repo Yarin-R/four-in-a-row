@@ -24,6 +24,7 @@ class Window(Frame):
         self.login_entry_password = None
         self.game_canvas = None
         self.game_status_line = None
+        self.game_timer_label = None
         self.game = None
         self.game_col = None
         self.game_need_new_board = False
@@ -34,9 +35,51 @@ class Window(Frame):
         self.p2_rect = None
         self.board_bg_img = None
         self.main_bg = None
+        self.game_bg = None
+
+        # Game status images
+        self.game_status_imgs = {}
+        self.init_game_status_imgs()
 
         # Init the window
         self.init_window()
+
+    def init_game_status_imgs(self):
+        im = Image.open(os.path.join(self.imgs_path, 'game_closed.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["game_closed"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'game_over.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["game_over"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'joined_game.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["joined_game"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'make_your_move.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["make_your_move"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'no_free_space_in_this column.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["no_free_space_column"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'waiting_for_a_player.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["waiting_for_player"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'waiting_for_your_competitor.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["waiting_for_competitor"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'you_lost.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["you_lost"] = ImageTk.PhotoImage(resized)
+
+        im = Image.open(os.path.join(self.imgs_path, 'you_won.png'))
+        resized = im.resize((600, 50), Image.ANTIALIAS)
+        self.game_status_imgs["you_won"] = ImageTk.PhotoImage(resized)
 
     def init_window(self):
         self.master.title("Four in a Row")
@@ -92,21 +135,35 @@ class Window(Frame):
 
     def game_gui(self):
         self.master.geometry("800x600")
+        im = Image.open(os.path.join(self.imgs_path, "bg_game.png"))
+        resized = im.resize((800, 600), Image.ANTIALIAS)
+        self.game_bg = ImageTk.PhotoImage(resized)
+        c = Canvas(self.master, width=800, height=600)
+        c.create_image(0, 0, image=self.game_bg, anchor='nw')
+        c.place(x=0, y=0)
 
-        self.game_status_line = Label(self.master, text="Status of the game!")
+        self.game_status_line = Label(self.master)
         self.game_status_line.grid()
+
+        self.game_timer_label = Label(self.master, font=("Times", 22), bg="white")
+        self.game_timer_label.grid(column=7)
 
         self.game_canvas = Canvas(self.master, width=640, height=480)
         self.game_canvas.grid(row=1)
         self.game_canvas.bind("<Button-1>", self.game_board_click)
 
+        im = Image.open(os.path.join(self.imgs_path, "button_giveup.png"))
+        resized = im.resize((180, 39), Image.ANTIALIAS)
         giveup_button = Button(self.master, text="Give up!",
                                command=self.game_giveup_button_click)
+        giveup_button.photo_ref = ImageTk.PhotoImage(resized)
+        giveup_button.config(image=giveup_button.photo_ref, borderwidth=0, width=180, height=39)
         giveup_button.grid(row=2)
 
         # save gui elements for login gui
         self.game_gui_elements = [
             self.game_status_line,
+            self.game_timer_label,
             self.game_canvas,
             giveup_button
         ]
@@ -172,28 +229,39 @@ class Window(Frame):
         ]
 
     def leaderboard_gui(self, leaderboard_arr):
-        self.master.geometry("800x600")
+        self.master.geometry("640x400")
+        c = Canvas(self.master, width=640, height=400)
+        c.create_image(0, 0, image=self.main_bg, anchor='nw')
+        c.place(x=0, y=0)
 
-        label_title = Label(self.master, text="Leaderboard")
-        label_title.grid(row=1)
-        place_1_label = Label(self.master, text=leaderboard_arr[0])
-        place_2_label = Label(self.master, text=leaderboard_arr[1])
-        place_3_label = Label(self.master, text=leaderboard_arr[2])
-        place_4_label = Label(self.master, text=leaderboard_arr[3])
-        place_5_label = Label(self.master, text=leaderboard_arr[4])
+        #label_title = Label(self.master, text="Leaderboard")
+        #label_title.grid(row=1)
+        place_1_label = Label(self.master, text=leaderboard_arr[0],
+                              font=("Times", 22), bg="white")
+        place_2_label = Label(self.master, text=leaderboard_arr[1],
+                              font=("Times", 22), bg="white")
+        place_3_label = Label(self.master, text=leaderboard_arr[2],
+                              font=("Times", 22), bg="white")
+        place_4_label = Label(self.master, text=leaderboard_arr[3],
+                              font=("Times", 22), bg="white")
+        place_5_label = Label(self.master, text=leaderboard_arr[4],
+                              font=("Times", 22), bg="white")
 
-        place_1_label.grid(row=2)
-        place_2_label.grid(row=3)
-        place_3_label.grid(row=4)
-        place_4_label.grid(row=5)
-        place_5_label.grid(row=6)
+        place_1_label.grid(row=1, column=1)
+        place_2_label.grid(row=2, column=1)
+        place_3_label.grid(row=3, column=1)
+        place_4_label.grid(row=4, column=1)
+        place_5_label.grid(row=5, column=1)
 
-        exit_button = Button(self.master, text="Exit",
+        im = Image.open(os.path.join(self.imgs_path, "button_exit_bg.png"))
+        resized = im.resize((180, 39), Image.ANTIALIAS)
+        exit_button = Button(self.master, text="Exit", fg="red", font="Times",
                              command=self.leaderboard_exit_button_click)
-        exit_button.grid(row=7)
+        exit_button.photo_ref = ImageTk.PhotoImage(resized)
+        exit_button.config(image=exit_button.photo_ref, borderwidth=0, width=180, height=39)
+        exit_button.grid(row=6, column=1)
 
         self.leaderboard_gui_elements = [
-            label_title,
             place_1_label, place_2_label, place_3_label,
             place_4_label, place_5_label,
             exit_button
@@ -248,7 +316,8 @@ class Window(Frame):
         self.game_gui()
 
         # Create a game
-        self.game = Game.Game(api, self.game_status_line)
+        self.game = Game.Game(api, self.game_status_line, self.game_status_imgs,
+                              self.game_timer_label)
         # Loop until the game starts
         self.start_game_interval()
 
@@ -270,7 +339,7 @@ class Window(Frame):
 
     def game_interval(self):
         status = self.game.game(self.game_col, self.game_need_new_board)
-        print status
+        #print status
         if status == "WINNER":
             self.display_game_board()
             tkMessageBox.showinfo("Four-in-a-row",
@@ -362,4 +431,3 @@ def start_graphics():
     root.mainloop()
 
 
-start_graphics()

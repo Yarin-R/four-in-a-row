@@ -3,35 +3,49 @@ import API
 import time
 
 class Game:
-    def __init__(self, api, game_status_line):
+    def __init__(self, api, game_status_line, game_status_imgs, game_timer_label):
         self.board = []
         self.api = api
         self.game_id = None
         self.another_player = None
         self.game_status_line = game_status_line
+        self.game_status_imgs = game_status_imgs
+        self.game_timer_label = game_timer_label
         self.time_wait = None
         return
 
+    def print_time(self, text):
+        try:
+            if text is None:
+                self.game_timer_label["text"] = ""
+            else:
+                self.game_timer_label["text"] = "{time}s".format(time=text)
+        except Exception as e:
+            print "print_timer exception: " + e.message
+
     def print_status(self, text):
         try:
-            self.game_status_line["text"] = text
-        except Exception:
-            pass
+            print text
+            self.game_status_line.config(image=self.game_status_imgs[text], borderwidth=0, width=600, height=50)
+            self.game_status_line.image = self.game_status_imgs[text]
+
+        except Exception as e:
+            print "print_status exception: {}".format(e.message)
 
     def start_game(self):
         self.game_id = None
         result, game_id = self.api.start_game()
         if result:
-            self.print_status("Join game! " + str(game_id))
+            self.print_status("joined_game")
             self.game_id = game_id
             self.another_player = self.api.game_get_competitor()
             return
 
         else:
-            self.print_status("Waiting for players")
+            self.print_status("waiting_for_player")
             result, game_id = self.api.join_game()
             if result:
-                self.print_status("Join game! " + str(game_id))
+                self.print_status("joined_game")
                 self.game_id = game_id
                 self.another_player = self.api.game_get_competitor()
                 return
@@ -64,31 +78,34 @@ class Game:
                 winner, data = self.api.game_get_board()
                 self.set_board(data)
                 if winner:
-                    self.print_status("Winner is " + winner)
+                    if winner == self.another_player:
+                        self.print_status("you_lost")
+                    else:
+                        self.print_status("you_won")
                     return "WINNER"
 
                 if need_new_board:
-                    self.print_status("It's your turn")
+                    self.print_status("make_your_move")
                     self.time_wait = time.time()
                     return "DISPLAY"
 
                 if col is None:
-                    self.print_status("Please make a move, {time}s left!".format(
-                        time=self.printable_time_left()
-                    ))
+                    self.print_status("make_your_move")
+                    self.print_time(self.printable_time_left())
                     return "PLAY"
                 else:
                     if self.api.game_do_turn(int(col)) == "OK":
-                        self.print_status("Great move.")
+                        self.print_time(None)
+                        self.print_status("waiting_for_competitor")
                         self.get_board()
                         return "WAIT"
                     else:
-                        self.print_status("No space left, try another column...")
+                        self.print_status("no_free_space_column")
                         return "PLAY"
 
             else:
                 # not my turn
-                self.print_status("Waiting for your competitor...")
+                self.print_status("waiting_for_competitor")
                 # Sleep in graphics class
 
                 return "WAIT"
@@ -100,12 +117,17 @@ class Game:
                     winner = excp_message[1]
                 else:
                     winner = e.message
-                self.print_status('{winner} won the game!'.format(winner=winner))
+
+                # print winner
+                if winner == self.another_player:
+                    self.print_status("you_lost")
+                else:
+                    self.print_status("you_won")
                 return "WINNER"
             else:
-                self.print_status('Game closed because {0}'.format(e.message))
+                self.print_status("game_closed")
                 return "CLOSED"
 
     def display_board(self):
-        pprint.pprint(self.board)
+        #pprint.pprint(self.board)
         return
