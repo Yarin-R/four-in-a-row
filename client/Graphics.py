@@ -28,6 +28,7 @@ class Window(Frame):
         self.game = None
         self.game_col = None
         self.game_need_new_board = False
+        self.disallow_new_game = False
 
         # Board images
         self.p0_rect = None
@@ -302,6 +303,7 @@ class Window(Frame):
 
     def game_giveup_button_click(self):
         # just swapping to the main gui
+        self.disallow_new_game = True
         api.game_close()
         self.gui_elements_remove(self.game_gui_elements)
         self.main_gui()
@@ -315,6 +317,8 @@ class Window(Frame):
         self.gui_elements_remove(self.main_gui_elements)
         self.game_gui()
 
+        # Allow for game to be created
+        self.disallow_new_game = False
         # Create a game
         self.game = Game.Game(api, self.game_status_line, self.game_status_imgs,
                               self.game_timer_label)
@@ -323,6 +327,9 @@ class Window(Frame):
 
     def start_game_interval(self):
         # Try to join a game
+        if self.disallow_new_game:
+            return
+
         self.game.start_game()
         if not self.game.game_id:
             self.after(1000, self.start_game_interval)
