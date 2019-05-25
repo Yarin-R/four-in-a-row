@@ -67,25 +67,39 @@ class Game:
             print "print_status exception: {}".format(e.message)
 
     def start_game(self):
-        
+        """
+        Starting the game
+        Requesting a new game room from the server
+        Getting required details from the server (game id, competitor...)
+        :return:
+        """
         self.game_id = None
         result, game_id = self.api.start_game()
         if result:
+            # Joined a game!
             self.print_status("joined_game")
             self.game_id = game_id
             self.another_player = self.api.game_get_competitor()
             return
 
         else:
+            # Still waiting for a player
             self.print_status("waiting_for_player")
             result, game_id = self.api.join_game()
+
             if result:
+                # Joined a game!
                 self.print_status("joined_game")
                 self.game_id = game_id
                 self.another_player = self.api.game_get_competitor()
                 return
 
     def set_board(self, board):
+        """
+        Get a string representing board from the server and convert it to actual lists
+        :param board:
+        :return:
+        """
         board_lines = board.split(",")
         self.board = []
         for i in xrange(len(board_lines)):
@@ -93,10 +107,19 @@ class Game:
         return
 
     def get_board(self):
+        """
+        Get the board from the server
+        Set the string'd board to actual lists of data
+        :return:
+        """
         is_winner, data = self.api.game_get_board(ignore_winner=True)
         self.set_board(data)
 
     def printable_time_left(self):
+        """
+        Calculate time left for the user to make amove
+        :return: time left, in seconds
+        """
         max_time = 59
         diff_time = int(round(time.time() - self.time_wait))
         # For now, max is 59 seconds
@@ -107,11 +130,18 @@ class Game:
             return max_time - diff_time
 
     def game(self, col=None, need_new_board=True):
-        # print "Starting game against " + self.api.game_get_competitor()
+        """
+        Game main algorithm
+        Interacting with Graphics module
+        :param col: column chosen as the move to make
+        :param need_new_board: Do Graphics request a new board to render?
+        :return: State for the Graphics module
+        """
         try:
             if self.api.game_get_turn():
                 winner, data = self.api.game_get_board()
                 self.set_board(data)
+
                 if winner:
                     if winner == self.another_player:
                         self.print_status("you_lost")
@@ -164,5 +194,8 @@ class Game:
                 return "CLOSED"
 
     def display_board(self):
-        #pprint.pprint(self.board)
-        return
+        """
+        DEBUG function to display the board in the console
+        For now, pass
+        """
+        pass

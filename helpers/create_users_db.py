@@ -1,3 +1,8 @@
+"""
+Helper script to create an empty database
+For new servers
+"""
+
 import sqlite3
 
 conn = sqlite3.connect('users.db')
