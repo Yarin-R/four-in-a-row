@@ -26,6 +26,3 @@ class Listener():
             self.logger.info("Accepted connection from " + str(c_addr))
             c_handler = Client_Handler(c_socket, c_addr, self.server_details)
             threading.Thread(target=c_handler.handle).start()
-
-
-

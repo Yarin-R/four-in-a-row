@@ -49,6 +49,7 @@ class Window(Frame):
         self.game = None
         self.game_col = None
         self.game_need_new_board = False
+        self.disallow_new_game = False
 
         # Board images
         self.p0_rect = None
@@ -377,6 +378,9 @@ class Window(Frame):
         Then remove the game gui elements from the window
         and move to the main menu
         """
+        
+        # just swapping to the main gui
+        self.disallow_new_game = True
         api.game_close()
         self.gui_elements_remove(self.game_gui_elements)
         self.main_gui()
@@ -398,6 +402,8 @@ class Window(Frame):
         self.gui_elements_remove(self.main_gui_elements)
         self.game_gui()
 
+        # Allow for game to be created
+        self.disallow_new_game = False
         # Create a game
         self.game = Game.Game(api, self.game_status_line, self.game_status_imgs,
                               self.game_timer_label)
@@ -412,6 +418,9 @@ class Window(Frame):
             b. Start a game interval, call game_interval()
         """
         # Try to join a game
+        if self.disallow_new_game:
+            return
+
         self.game.start_game()
         if not self.game.game_id:
             # Try that again in 1 sec
